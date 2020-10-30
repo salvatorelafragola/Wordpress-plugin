@@ -61,11 +61,12 @@ function mic_create_tables(){
 add_action( 'admin_menu', 'mic_my_admin_menu' );
 
 function mic_my_admin_menu() {
-    add_menu_page( 'SalCEO Plugin - Activation', 'SalCEO Plugin', 'manage_options', 'salceo-admin-page.php', 'mic_activation_plugin', 'dashicons-code-standards', 13 ); 
-        add_submenu_page( 'salceo-admin-page.php', 'SalCEO Plugin - Secteur', 'Ajouter secteur', 'manage_options', 'salceo-admin-page_secteur.php', 'mic_add_secteur' );
-        add_submenu_page( 'salceo-admin-page.php', 'SalCEO Plugin - Service', 'Ajouter service', 'manage_options', 'salceo-admin-page_service.php', 'mic_add_service' ); 
-        add_submenu_page( 'salceo-admin-page.php', 'SalCEO Plugin - Keyword', 'Ajouter mot-clef', 'manage_options', 'salceo-admin-page_keyword.php', 'mic_add_keyword' );
-        add_submenu_page( 'salceo-admin-page.php', 'SalCEO Plugin - Gestion des articles', 'Gestion des articles', 'manage_options', 'salceo-admin-page_gestion_articles.php', 'mic_gestion_articles' );
+    add_menu_page( 'SalCEO Plugin - Manage Options', 'SalCEO Plugin', 'administrator', 'salceo-admin-page', 'mic_configuration'); 
+        add_submenu_page( 'salceo-admin-page', 'Make It SEO - Secteur', 'Ajouter secteur', 'administrator', 'makeitseo-admin-page_secteur', 'mic_add_secteur' );
+        add_submenu_page( 'salceo-admin-page', 'Make It SEO - Service', 'Ajouter service', 'administrator', 'makeitseo-admin-page_service', 'mic_add_service' ); 
+        add_submenu_page( 'salceo-admin-page', 'Make It SEO - Keyword', 'Ajouter mot-clef', 'administrator', 'makeitseo-admin-page_keyword', 'mic_add_keyword' );
+        add_submenu_page( 'salceo-admin-page', 'Make It SEO - Gestion des articles', 'Gestion des articles', 'administrator', 'makeitseo-admin-page_gestion_articles', 'mic_gestion_articles' );
+
 }
 //Géneration de la page avec la liste des secteurs
  function mic_page_secteurs(){

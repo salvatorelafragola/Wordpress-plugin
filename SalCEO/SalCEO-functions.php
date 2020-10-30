@@ -93,7 +93,7 @@ function mic_activation_plugin(){
     ?>  
     <?php
 }*/
-/*
+
 //page de configuration
 function mic_configuration(){
     mic_load_plugin_css();
@@ -151,7 +151,7 @@ function mic_configuration(){
     <center><a href="https://www.makeitcreative.fr/"><img src="<?php echo plugin_dir_url( __FILE__ ) . 'img/logo2.jpg'; ?>" alt="agence-web"></a><center>
 <?php    
 }
-*/
+
 //page ajoute keyword
 function mic_add_keyword(){
     mic_load_plugin_css();
