@@ -325,7 +325,6 @@ function mic_add_service(){
             </h4>
         </div>
     </div>
-        <center><a href="https://www.makeitcreative.fr/"><img src="<?php echo plugin_dir_url( __FILE__ ) . 'img/logo2.jpg'; ?>" alt="agence-web"></a><center>
     <?php
     }
 function mic_ajout_articles(){
@@ -466,12 +465,77 @@ function mic_supprimer_articles(){
     }
 }    
 function mic_gestion_articles(){
+    global $wpdb;
     ?>
-  <h1>Gestion des articles</h1>
 <?php 
-    mic_ajout_articles();
-    mic_modif_articles();     
-    mic_supprimer_articles();    
+    //mic_ajout_articles();
+    //mic_modif_articles();     
+    //0ic_supprimer_articles();   
+    $articles = $wpdb->get_results( "select * from {$wpdb->prefix}mic_articles"); 
+
+?>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#hideshow").click(function () {
+        $("#ajout_articles").toggle();
+    });
+});
+</script>
+<div class="wrap">
+<h1 class="wp-heading-inline">
+Gestion des articles</h1>
+<input type='button' id='hideshow' value='Ajouter' class="page-title-action">
+<table class="widefat fixed" cellspacing="0">
+    <thead>
+    <tr>
+
+            <th id="cb" class="manage-column column-cb check-column" scope="col">aa</th> // this column contains checkboxes
+            <th id="columnname" class="manage-column column-columnname" scope="col">bb</th>
+            <th id="columnname" class="manage-column column-columnname num" scope="col">cc</th> // "num" added because the column contains numbers
+
+    </tr>
+    </thead>
+
+    <tfoot>
+    <tr>
+
+            <th class="manage-column column-cb check-column" scope="col">dd</th>
+            <th class="manage-column column-columnname" scope="col">ee</th>
+            <th class="manage-column column-columnname num" scope="col">ff</th>
+
+    </tr>
+    </tfoot>
+
+    <tbody>
+    <?php
+    foreach ( $articles as $article){ 
+        ?>
+        <tr class="alternate">
+            <th class="check-column" scope="row"><?php echo($article->id); ?></th>
+            <td class="column-columnname"><?php echo($article->titre); ?></td>
+            <td class="column-columnname"></td>
+        </tr>
+        
+        <tr class="alternate" valign="top"> // this row contains actions
+            <th class="check-column" scope="row"></th>
+            <td class="column-columnname">
+                <div class="row-actions">
+                    <span><a href="#">Action</a> |</span>
+                    <span><a href="#">Action</a></span>
+                </div>
+            </td>
+            <td class="column-columnname"></td>
+        </tr>
+    <?php } ?>
+
+        
+    </tbody>
+</table>
+</div>
+<div id="ajout_articles" style="display:none;"><?php mic_ajout_articles(); ?></div>
+<?php
+
 }
 //pour checker les page qu exist
 function mic_the_slug_exists($post_name) {
