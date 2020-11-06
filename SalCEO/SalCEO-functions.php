@@ -43,8 +43,8 @@ function mic_get_all_id(){
     $id4= mic_getid_by_shortcode('[salceo-secteur]');
     $id5= mic_getid_by_shortcode('[salceo-keyword-id]');
     $id6= mic_getid_by_shortcode('[salceo-service]');
-    $id7= mic_getid_by_shortcode('[salceo-article]');
-    $result = array_merge($id1, $id2, $id3, $id4, $id5, $id6, $id7);
+    //$id7= mic_getid_by_shortcode('[salceo-article]');
+    $result = array_merge($id1, $id2, $id3, $id4, $id5, $id6);
     return $result;
 }
 
@@ -148,7 +148,7 @@ function mic_configuration(){
     } 
 
 ?></div>
-    <center><a href="https://www.makeitcreative.fr/"><img src="<?php echo plugin_dir_url( __FILE__ ) . 'img/logo2.jpg'; ?>" alt="agence-web"></a><center>
+  
 <?php    
 }
 
@@ -471,7 +471,7 @@ function mic_gestion_articles(){
     //mic_ajout_articles();
     //mic_modif_articles();     
     //0ic_supprimer_articles();   
-    $articles = $wpdb->get_results( "select * from {$wpdb->prefix}mic_articles"); 
+    $articles = $wpdb->get_results( "select * from {$wpdb->prefix}posts where post_content = '[salceo-article]' AND post_status = 'publish'");
 
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -490,8 +490,8 @@ Gestion des articles</h1>
     <thead>
     <tr>
 
-            <th id="cb" class="manage-column column-cb check-column" scope="col">aa</th> // this column contains checkboxes
-            <th id="columnname" class="manage-column column-columnname" scope="col">bb</th>
+            <td id="cb" class="manage-column column-cb check-column" scope="col"><input id="cb-select-all" type="checkbox"></td> // this column contains checkboxes
+            <th id="columnname" class="manage-column column-columnname" scope="col"><a href="http://localhost/wordpress/plugin_per_esame/wp-admin/edit.php?post_type=page&orderby=title&order=asc"><span>Titre</span></a></th>
             <th id="columnname" class="manage-column column-columnname num" scope="col">cc</th> // "num" added because the column contains numbers
 
     </tr>
@@ -507,13 +507,17 @@ Gestion des articles</h1>
     </tr>
     </tfoot>
 
-    <tbody>
+    <tbody id="the-list">
     <?php
     foreach ( $articles as $article){ 
+        $article_titre = $article->post_title;
+        $id_post =  $article->ID;
+        $url_delete_page = get_delete_post_link( $id_post);
+        var_dump($url_delete_page);
         ?>
-        <tr class="alternate">
-            <th class="check-column" scope="row"><?php echo($article->id); ?></th>
-            <td class="column-columnname"><?php echo($article->titre); ?></td>
+        <tr id="post-2" class="iedit author-self level-0 post-2 type-page status-publish hentry">
+            <th class="check-column" scope="row"><?php echo($id_post); ?></th>
+            <td class="title column-title has-row-actions column-primary page-title"><?php echo("<strong><a class='row-title' href=".get_home_url()."/".strtolower(str_replace(" ","-",normalize($article_titre)))."-k".$article->id."'>".ucfirst($article_titre)."</a></strong>");?></td>
             <td class="column-columnname"></td>
         </tr>
         
@@ -521,8 +525,8 @@ Gestion des articles</h1>
             <th class="check-column" scope="row"></th>
             <td class="column-columnname">
                 <div class="row-actions">
-                    <span><a href="#">Action</a> |</span>
-                    <span><a href="#">Action</a></span>
+                    <span><a href="#">Modifier</a> |</span>
+                    <span class="trash"><?php echo("<a class='submitdelete' href=$url_delete_page>Corbeille</a>"); ?></span>
                 </div>
             </td>
             <td class="column-columnname"></td>
@@ -532,6 +536,16 @@ Gestion des articles</h1>
         
     </tbody>
 </table>
+</div>
+<div class="tablenav bottom">
+    <div class="alignleft actions bulkactions">
+        <select id="bulk-action-selector-bottom" name="action2">
+            <option value="-1">Actions groupées</option>
+            <option class="hide-if-no-js" value="edit">Modifier</option>
+            <option value="trash">Mettre à la corbeille</option>
+        </select>
+        <input id="doaction2" class="button action" type="submit" value="Appliquer">
+    </div>
 </div>
 <div id="ajout_articles" style="display:none;"><?php mic_ajout_articles(); ?></div>
 <?php
