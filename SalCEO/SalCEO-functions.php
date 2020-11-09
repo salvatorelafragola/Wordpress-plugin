@@ -467,10 +467,7 @@ function mic_supprimer_articles(){
 function mic_gestion_articles(){
     global $wpdb;
     ?>
-<?php 
-    //mic_ajout_articles();
-    //mic_modif_articles();     
-    //0ic_supprimer_articles();   
+<?php  
     $articles = $wpdb->get_results( "select * from {$wpdb->prefix}posts where post_content = '[salceo-article]' AND post_status = 'publish'");
 
 ?>
@@ -479,20 +476,30 @@ function mic_gestion_articles(){
 $(document).ready(function(){
     $("#hideshow").click(function () {
         $("#ajout_articles").toggle();
+        $("#modif_articles").hide();
     });
 });
+$(function() {
+    $("#modifhideshow").click(function () {
+            $("#modif_articles").toggle();
+            $("#ajout_articles").hide();
+        });        
+   }); 
 </script>
+
 <div class="wrap">
 <h1 class="wp-heading-inline">
 Gestion des articles</h1>
 <input type='button' id='hideshow' value='Ajouter' class="page-title-action">
+<input type='button' id='modifhideshow' value='Modifier' class="page-title-action">
+<form id="posts-filter" name="supprimer_articles" action="" method="post">
 <table class="widefat fixed" cellspacing="0">
     <thead>
     <tr>
 
-            <td id="cb" class="manage-column column-cb check-column" scope="col"><input id="cb-select-all" type="checkbox"></td> // this column contains checkboxes
+            <td id="cb" class="manage-column column-cb check-column" scope="col"><input id="cb-select-all" type="checkbox"></td> 
             <th id="columnname" class="manage-column column-columnname" scope="col"><a href="http://localhost/wordpress/plugin_per_esame/wp-admin/edit.php?post_type=page&orderby=title&order=asc"><span>Titre</span></a></th>
-            <th id="columnname" class="manage-column column-columnname num" scope="col">cc</th> // "num" added because the column contains numbers
+            <th id="columnname" class="manage-column column-columnname num" scope="col">cc</th> 
 
     </tr>
     </thead>
@@ -513,19 +520,17 @@ Gestion des articles</h1>
         $article_titre = $article->post_title;
         $id_post =  $article->ID;
         $url_delete_page = get_delete_post_link( $id_post);
-        var_dump($url_delete_page);
         ?>
         <tr id="post-2" class="iedit author-self level-0 post-2 type-page status-publish hentry">
-            <th class="check-column" scope="row"><?php echo($id_post); ?></th>
+            <th class="check-column" scope="row"><input type="checkbox" name="supprimer_articles[]" value=<?php echo($id_post); ?>></th>
             <td class="title column-title has-row-actions column-primary page-title"><?php echo("<strong><a class='row-title' href=".get_home_url()."/".strtolower(str_replace(" ","-",normalize($article_titre)))."-k".$article->id."'>".ucfirst($article_titre)."</a></strong>");?></td>
             <td class="column-columnname"></td>
         </tr>
         
-        <tr class="alternate" valign="top"> // this row contains actions
+        <tr class="alternate" valign="top"> 
             <th class="check-column" scope="row"></th>
             <td class="column-columnname">
                 <div class="row-actions">
-                    <span><a href="#">Modifier</a> |</span>
                     <span class="trash"><?php echo("<a class='submitdelete' href=$url_delete_page>Corbeille</a>"); ?></span>
                 </div>
             </td>
@@ -541,13 +546,23 @@ Gestion des articles</h1>
     <div class="alignleft actions bulkactions">
         <select id="bulk-action-selector-bottom" name="action2">
             <option value="-1">Actions groupées</option>
-            <option class="hide-if-no-js" value="edit">Modifier</option>
             <option value="trash">Mettre à la corbeille</option>
         </select>
         <input id="doaction2" class="button action" type="submit" value="Appliquer">
     </div>
 </div>
+</form>
+<?php 
+    if ($_POST["action2"] == "trash"){
+        var_dump(count($_POST["supprimer_articles"]));  
+        if (count($_POST["supprimer_articles"]) > 0 ){
+            foreach ( $_POST["supprimer_articles"] as $articlesupprimer ){
+                wp_trash_post( $articlesupprimer );  
+            }
+       }
+    } ?>
 <div id="ajout_articles" style="display:none;"><?php mic_ajout_articles(); ?></div>
+<div id="modif_articles" style="display:none;"><?php mic_modif_articles(); ?></div>
 <?php
 
 }
