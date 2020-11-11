@@ -358,7 +358,7 @@ function mic_ajout_articles(){
                         $sql_article = $wpdb->prepare("INSERT INTO $table (image, titre, contenu) SELECT '". plugin_dir_url(__FILE__)."/img/image-default.jpg', %s, %s  FROM dual WHERE NOT EXISTS (SELECT titre FROM $table WHERE titre=%s) LIMIT 1;", $_POST['titre'], $_POST['contenuarticle'], $_POST['titre']);
                     } else {
                         $sql_article = $wpdb->prepare("INSERT INTO $table (image, titre, contenu) SELECT %s, %s, %s FROM dual WHERE NOT EXISTS (SELECT titre FROM $table WHERE titre=%s) LIMIT 1;", $resultimage->guid, $_POST['titre'],  $_POST['contenuarticle'],  $_POST['titre']);
-                    }  
+                    }      
                     $wpdb->query($sql_article); 
                 }
             }
@@ -367,17 +367,20 @@ function mic_ajout_articles(){
 function mic_modif_articles(){
     global $wpdb;
     $table = "{$wpdb->prefix}mic_articles";
+    $table2 = "{$wpdb->prefix}posts";
    ?> <h2>Modification</h2>
         <form action="#" method="post" enctype="multipart/form-data" name="modifpost">
            <h4>Choisir le post à modifier: </h4>
            <select id="service" name="articles">
            <?php    
                $articles = $wpdb->get_results( "select * from {$wpdb->prefix}mic_articles"); 
-               ?><option value='0'></option><?php
+               ?>ì<option value='0'></option><?php
                foreach ($articles as $article){       
-                   echo "<option value='$article->id'>$article->titre</option>";
+                   echo "
+                   <option value='$article->id'>$article->titre</option>
+                   ";
                }
-            ?>   
+            ?> ì 
            </select><br>
            <h4>Saisir le titre : </h4>
                <input type="text" name="titre2" />
@@ -403,12 +406,15 @@ function mic_modif_articles(){
                     if ($_POST['articles'] != 0){
                         if (!empty($_POST['titre2']) && !empty($_POST['contenuarticle2']) && $sizefile2 == false) {
                             $sql_uparticle = $wpdb->prepare("UPDATE $table SET titre=%s, contenu=%s WHERE id=%s", $_POST['titre2'], $_POST['contenuarticle2'], $_POST['articles']);
+                            $sql_uparticle2 = $wpdb->prepare("DELETE FROM $table2 WHERE post_title = (SELECT titre FROM wp_mic_articles WHERE id=%d) AND post_content = '[salceo-article]'",$_POST['articles'] );
                         } elseif (!empty($_POST['titre2']) && empty($_POST['contenuarticle2']) && $sizefile2 == false){
                             $sql_uparticle = $wpdb->prepare("UPDATE $table SET titre=%s WHERE id=%s", $_POST['titre2'], $_POST['articles']);
+                            $sql_uparticle2 = $wpdb->prepare("DELETE FROM $table2 WHERE post_title = (SELECT titre FROM wp_mic_articles WHERE id=%d) AND post_content = '[salceo-article]'",$_POST['articles'] );
                         } elseif (empty($_POST['titre2']) && !empty($_POST['contenuarticle2']) && $sizefile2 == false){
                             $sql_uparticle = $wpdb->prepare("UPDATE $table SET contenu=%s WHERE id=%s", $_POST['contenuarticle2'], $_POST['articles']);
-                        } elseif (!empty($_POST['titre2']) && !empty($_POST['contenuarticle2']) && $sizefile2 == true){
-                            $sql_uparticle = $wpdb->prepare("UPDATE $table SET image=%s, titre=%s, contenu=%s WHERE id=%s", $resultimage2->guid, $_POST['titre2'], $_POST['contenuarticle2'], $_POST['articles']);
+                        } elseif (!empty($_POST['titre2']) && !empty($_POST['contenuarticle2']) && $sizefile2 == true){ 
+                            $sql_uparticle = $wpdb->prepare("UPDATE $table SET image=%s, titre=%s, contenu=%s WHERE id=%s", $resultimage2->guid, $_POST['titre2'], $_POST['contenuarticle2'], $_POST['articles']);                       
+                            $sql_uparticle2 = $wpdb->prepare("DELETE FROM $table2 WHERE post_title = (SELECT titre FROM wp_mic_articles WHERE id=%d) AND post_content = '[salceo-article]'",$_POST['articles'] );
                         } elseif (!empty($_POST['titre2']) && empty($_POST['contenuarticle2']) && $sizefile2 == true){
                             $sql_uparticle = $wpdb->prepare("UPDATE $table SET image=%s, titre=%s WHERE id=%s", $resultimage2->guid, $_POST['titre2'], $_POST['articles']);
                         } elseif (empty($_POST['titre2']) && !empty($_POST['contenuarticle2']) && $sizefile2 == true){
@@ -417,8 +423,8 @@ function mic_modif_articles(){
                             $sql_uparticle = $wpdb->prepare("UPDATE $table SET image=%s WHERE id=%s", $resultimage2->guid, $_POST['articles']);
                         }
 
+                        $wpdb->query($sql_uparticle2);
                         $wpdb->query($sql_uparticle);
-                        
                         echo "<script>alert('Post modifié.');</script>";
                         echo "<script type='text/javascript'>window.location=document.location.href;</script>";
 
@@ -468,8 +474,9 @@ function mic_gestion_articles(){
     global $wpdb;
     ?>
 <?php  
-    $articles = $wpdb->get_results( "select * from {$wpdb->prefix}posts where post_content = '[salceo-article]' AND post_status = 'publish'");
-
+  //$articles = $wpdb->get_results( "select * from {$wpdb->prefix}mic_articles INNER JOIN {$wpdb->prefix}posts ON {$wpdb->prefix}mic_articles.id = {$wpdb->prefix}posts.id");
+ // $articles = $wpdb->get_results("select * from {$wpdb->prefix}posts left JOIN {$wpdb->prefix}mic_articles ON {$wpdb->prefix}posts.id = {$wpdb->prefix}mic_articles.id  where post_status = 'publish'");
+    $articles = $wpdb->get_results( "select * from {$wpdb->prefix}posts WHERE post_content = '[salceo-article]' AND post_status = 'publish'");
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="text/javascript">
@@ -481,8 +488,8 @@ $(document).ready(function(){
 });
 $(function() {
     $("#modifhideshow").click(function () {
-            $("#modif_articles").toggle();
-            $("#ajout_articles").hide();
+        $("#modif_articles").toggle();
+        $("#ajout_articles").hide();
         });        
    }); 
 </script>
@@ -499,7 +506,7 @@ Gestion des articles</h1>
 
             <td id="cb" class="manage-column column-cb check-column" scope="col"><input id="cb-select-all" type="checkbox"></td> 
             <th id="columnname" class="manage-column column-columnname" scope="col"><a href="http://localhost/wordpress/plugin_per_esame/wp-admin/edit.php?post_type=page&orderby=title&order=asc"><span>Titre</span></a></th>
-            <th id="columnname" class="manage-column column-columnname num" scope="col">cc</th> 
+            <th id="columnname" class="manage-column column-columnname num" scope="col"></th> 
 
     </tr>
     </thead>
@@ -507,9 +514,9 @@ Gestion des articles</h1>
     <tfoot>
     <tr>
 
-            <th class="manage-column column-cb check-column" scope="col">dd</th>
-            <th class="manage-column column-columnname" scope="col">ee</th>
-            <th class="manage-column column-columnname num" scope="col">ff</th>
+            <th class="manage-column column-cb check-column" scope="col"></th>
+            <th class="manage-column column-columnname" scope="col"></th>
+            <th class="manage-column column-columnname num" scope="col"></th>
 
     </tr>
     </tfoot>
@@ -522,7 +529,7 @@ Gestion des articles</h1>
         $url_delete_page = get_delete_post_link( $id_post);
         ?>
         <tr id="post-2" class="iedit author-self level-0 post-2 type-page status-publish hentry">
-            <th class="check-column" scope="row"><input type="checkbox" name="supprimer_articles[]" value=<?php echo($id_post); ?>></th>
+            <th class="check-column" scope="row"><input type="checkbox" name="supprimer_articles[]" value=<?php echo( $id_post); ?>></th>
             <td class="title column-title has-row-actions column-primary page-title"><?php echo("<strong><a class='row-title' href=".get_home_url()."/".strtolower(str_replace(" ","-",normalize($article_titre)))."-k".$article->id."'>".ucfirst($article_titre)."</a></strong>");?></td>
             <td class="column-columnname"></td>
         </tr>
@@ -554,11 +561,13 @@ Gestion des articles</h1>
 </form>
 <?php 
     if ($_POST["action2"] == "trash"){
-        var_dump(count($_POST["supprimer_articles"]));  
         if (count($_POST["supprimer_articles"]) > 0 ){
             foreach ( $_POST["supprimer_articles"] as $articlesupprimer ){
+              //  $sql_iddeletearticle = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->prefix}posts WHERE post_title = (SELECT titre FROM {$wpdb->prefix}mic_articles WHERE id = %d) AND post_status = 'publish'",$articlesupprimer ));
+               // $sql_returnid = $wpdb->get_row( $sql_iddeletearticle );
                 wp_trash_post( $articlesupprimer );  
             }
+            echo "<script type='text/javascript'>window.location=document.location.href;</script>";
        }
     } ?>
 <div id="ajout_articles" style="display:none;"><?php mic_ajout_articles(); ?></div>
@@ -569,7 +578,7 @@ Gestion des articles</h1>
 //pour checker les page qu exist
 function mic_the_slug_exists($post_name) {
     global $wpdb;
-    if($wpdb->get_row("SELECT post_name FROM wp_posts WHERE post_name LIKE '%" . $post_name . "%'", 'ARRAY_A')) {
+    if($wpdb->get_row("SELECT post_name FROM {$wpdb->prefix}posts WHERE post_name LIKE '%" . $post_name . "%'", 'ARRAY_A')) {
         return true;
     } else {
         return false;
@@ -601,6 +610,7 @@ function mic_upload_user_file( $file = array() ) {
     }
     return false;
 }
+
 //get les restriction de secteur, service et key
 /*function mic_get_credit($mdp){
     $url = 'https://www.sciallano.fr/makeitseo/index.php';
