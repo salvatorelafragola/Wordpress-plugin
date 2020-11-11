@@ -1,7 +1,7 @@
 <script src="//cdn.ckeditor.com/4.14.1/basic/ckeditor.js"></script>
 <?php
 require_once ABSPATH . '/wp-admin/includes/post.php';
-//function que change en automatique les character pour la generations des lien
+//correction des mots
 function normalize ($string) {
     $table = array(
     'Š'=>'S', 'š'=>'s', 'Ð'=>'Dj', 'Ž'=>'Z', 'ž'=>'z', 'C'=>'C', 'c'=>'c', 'C'=>'C', 'c'=>'c',
@@ -16,14 +16,14 @@ function normalize ($string) {
     return strtr($string, $table);
 }
 //function garde en array tous les post de la bdd
-function mic_stock_in_array($tableau){
+/*function mic_stock_in_array($tableau){
     global $wpdb;   
     $allPage = $wpdb->get_results("SELECT * from {$wpdb->prefix}posts");
         foreach ( $allPage as $post){  
             array_push($tableau, $post->post_name); 
         } 
     return $tableau;
-}   
+}   */
 //function récupere les id de les pages crées avec le shortcode keyword et keyword+secteur
 function mic_getid_by_shortcode($str){
      global $wpdb;  
@@ -99,9 +99,9 @@ function mic_configuration(){
     mic_load_plugin_css();
     ?>
 	<div class="configuration">
-            <center><img src="<?php echo plugin_dir_url( __FILE__ ) . 'img/logo3.png'; ?>"><center>
-                <h3>Créer les liens pour les page Services et Secteurs.</h3>
-<?php   global $wpdb;
+        <h3>Créer les liens pour les page Services et Secteurs.</h3>
+<?php  
+     global $wpdb;
         $res_secteur = $wpdb->get_row("SELECT post_name FROM {$wpdb->prefix}posts WHERE post_content='[salceo-secteur]'");     
         $output_sec = $res_secteur ? "Le lien actuelle pour la page des secteurs est <span  style='color:white'><b>$res_secteur->post_name</b></span>" : "La page secteurs <b>n'existe pas.</b>";   
         $res_service = $wpdb->get_row("SELECT post_name FROM {$wpdb->prefix}posts WHERE post_content='[salceo-services]'");
@@ -116,35 +116,35 @@ function mic_configuration(){
                         <input class="buttonconfig" type="submit" value="Confirmer"></h4>
                 </form>
           
-    <?php 
+<?php 
     if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         if (!empty($_POST['micinterventions']) && strlen($_POST['micinterventions']) > 0 && is_string($_POST['micinterventions'])){      
-                $interventions = strtolower( str_replace( " ","-",normalize( $_POST['micinterventions']))); 
-                if (mic_the_slug_exists($interventions) == true) {
-                    $message =  "<h4 style='color:red'>$interventions existe déjà.</h4>";
-                    echo $message;   
-                } elseif (isset($res_secteur)){
-                    $message =  "<h4 style='color:red'>L' URL pour les secteurs existe déjà.</h4>";
-                    echo $message; 
-                }else {
-                    mic_page_secteurs();
-                    echo "<script type='text/javascript'>window.location=document.location.href;</script>";
-                }
+            $interventions = strtolower( str_replace( " ","-",normalize( $_POST['micinterventions']))); 
+            if (mic_the_slug_exists($interventions) == true) {
+                $message =  "<h4 style='color:red'>$interventions existe déjà.</h4>";
+                echo $message;   
+            } elseif (isset($res_secteur)){
+                $message =  "<h4 style='color:red'>L' URL pour les secteurs existe déjà.</h4>";
+                echo $message; 
+            }else {
+                mic_page_secteurs();
+                echo "<script type='text/javascript'>window.location=document.location.href;</script>";
+            }
                  
         }
         if (!empty($_POST['micservices']) && strlen($_POST['micservices']) > 0 && is_string($_POST['micservices'])){
-                 $services = strtolower( str_replace( " ","-",normalize( $_POST['micservices']))); 
-                if (mic_the_slug_exists($services) == true) {
-                    $message =  "<h4 style='color:red'>Le lien  $services  existe.<h4><br>";
-                    echo $message; 
-                } elseif (isset($res_service)){
-                    $message =  "<h4 style='color:red'>L' URL pour les services existe déjà.</h4>";
-                    echo $message ;  
-                } else {
-                    mic_services();
-                    echo "<script type='text/javascript'>window.location=document.location.href;</script>";
-                }
+                $services = strtolower( str_replace( " ","-",normalize( $_POST['micservices']))); 
+            if (mic_the_slug_exists($services) == true) {
+                $message =  "<h4 style='color:red'>Le lien  $services  existe.<h4><br>";
+                echo $message; 
+            } elseif (isset($res_service)){
+                $message =  "<h4 style='color:red'>L' URL pour les services existe déjà.</h4>";
+                echo $message ;  
+            } else {
+                mic_services();
+                echo "<script type='text/javascript'>window.location=document.location.href;</script>";
             }
+        }
     } 
 
 ?></div>
@@ -156,44 +156,50 @@ function mic_configuration(){
 function mic_add_keyword(){
     mic_load_plugin_css();
     ?>
-    <div class="aj_keyword">
-        <center><img src="<?php echo plugin_dir_url( __FILE__ ) . 'image/logo.png'; ?>"><center>
-            <h3>Ajouter des mot-cléfs</h3>
-                <form action="#" method="post" enctype="multipart/form-data">
-                    <h4><b>Saisir le mot-cléf :</b></h4>
-                    <input type="text" name="motclef" /><br><br>
-                    <label for="servic"><b> Choisir le service associé: </b> </label><br><br>
-                    <select id="service" name="serv">
-                    <?php    
-                        global $wpdb;
-                        $res2 = $wpdb->get_results( "select * from {$wpdb->prefix}mic_services"); 
-                        ?><option value='0'></option><?php
-                        foreach ($res2 as $service){       
-                            echo "<option value='$service->id'>$service->service</option>";
-                        }
-                     ?>    
-                    </select>
-                    <h4>Saisir une déscription : </h4>
-                    <textarea name="petittext" /></textarea>
-                    <h4>Uploader une image : </h4>
-                    <input type="file" name="my_file_upload"  class="bg_checkbox"  ><br><br>
-                    <input class="buttonconfig" type="submit" value="Confirmer">
-                    <script>
-                        CKEDITOR.replace( 'petittext' );
-                    </script>
-                </form> 
-                <hr>
-        <?php     
-            $motclefs = $wpdb->get_results( "select keyword from {$wpdb->prefix}mic_keyword");  
-        ?>  <div class="affichagedonnees">
-            <h3>Liste mot cléfs existant:</h3><h4> 
-        <?php        
-            foreach ($motclefs as $motclef){  
-                $text .= $motclef->keyword.', ';
-            }
-            $text = rtrim($text, ', ');
-            if (empty($text)){$text .= '</h4></div>';} else {$text .= '.</h4></div>';}
-            echo $text;
+    <div class="aj_keyword">              
+        <h3>Ajouter des mot-cléfs</h3>
+            <form action="#" method="post" enctype="multipart/form-data">
+                <h4><b>Saisir le mot-cléf :</b></h4>
+                <input type="text" name="motclef" /><br><br>
+                <label for="servic"><b> Choisir le service associé: </b> </label><br><br>
+                <select id="service" name="serv">
+                <?php    
+                    global $wpdb;
+                    $res2 = $wpdb->get_results( "select * from {$wpdb->prefix}mic_services"); 
+                    ?><option value='0'></option><?php
+                    foreach ($res2 as $service){       
+                        echo "<option value='$service->id'>$service->service</option>";
+                    }
+                    ?>    
+                </select>
+                <h4>Saisir une déscription : </h4>
+                <textarea name="petittext" /></textarea>
+                <h4>Uploader une image : </h4>
+                <input type="file" name="my_file_upload"  class="bg_checkbox"  ><br><br>
+                <input class="buttonconfig" type="submit" value="Confirmer">
+                <script>
+                    CKEDITOR.replace( 'petittext' );
+                </script>
+            </form> 
+            <hr>
+    <?php     
+        $motclefs = $wpdb->get_results( "select keyword from {$wpdb->prefix}mic_keyword");  
+    ?>  <div class="affichagedonnees">
+        <h3>Liste mot cléfs existant:</h3><h4> 
+    <?php        
+
+        foreach ($motclefs as $motclef){  
+
+            $text .= $motclef->keyword.', ';
+
+        }
+
+        $text = rtrim($text, ', ');
+
+        if (empty($text)){ $text .= '</h4></div>';} else {$text .= '.</h4></div>'; }
+
+        echo $text;
+
         ?>
     </div>
     <?php 
@@ -205,18 +211,27 @@ function mic_add_keyword(){
             $key = strip_tags($_POST['motclef']);
             $text = $_POST['petittext'];  
             $file=$_FILES['my_file_upload'];
+
             if( ! empty( $_FILES['my_file_upload'] ) ) {
+
                 $attachment_id = mic_upload_user_file( $file );
                 $reqimageprepare = $wpdb->prepare("SELECT guid FROM {$wpdb->prefix}posts WHERE ID=%d", $attachment_id);
                 $resultimage = $wpdb->get_row($reqimageprepare);
                 if ($sizefile == 0) {
+
                     $sql = $wpdb->prepare("INSERT INTO $table (keyword, texte, image) SELECT  %s, %s, '". plugin_dir_url(__FILE__)."/img/image-default.jpg' FROM dual WHERE NOT EXISTS (SELECT KEYWORD FROM $table WHERE keyword=%s) LIMIT 1;", ucfirst($key), $text, ucfirst($key));      
+                
                 } else {
+
                     $sql = $wpdb->prepare("INSERT INTO $table (keyword, texte, image) SELECT  %s, %s, '%s' FROM dual WHERE NOT EXISTS (SELECT KEYWORD FROM $table WHERE keyword=%s) LIMIT 1;", ucfirst($key), $text, $resultimage->guid, ucfirst($key));
+                
                 }
+
                 $wpdb->query($sql);
+
             } 
             if (!empty($_POST['serv']) && $_POST['serv'] != 0 && !empty($_POST['motclef'])){    
+
                 $table = "{$wpdb->prefix}mic_rel_key_ser";
                 $reqkeyser = $wpdb->prepare("INSERT INTO {$table} (id_service, id_keyword) SELECT %d,(SELECT id FROM {$wpdb->prefix}mic_keyword WHERE keyword=%s) FROM dual where not exists (select id_service, id_keyword from 
                 {$table} where id_service=%d and id_keyword=(SELECT id FROM {$wpdb->prefix}mic_keyword WHERE keyword=%s)) LIMIT 1;", $_POST['serv'], ucfirst($key), $_POST['serv'], ucfirst($key));           
@@ -224,61 +239,68 @@ function mic_add_keyword(){
                 $rowservice = $wpdb->get_row("SELECT service FROM {$wpdb->prefix}mic_services WHERE id={$_POST['serv']}");   
                 $rowkeyword = $wpdb->get_row("SELECT keyword FROM {$wpdb->prefix}mic_keyword WHERE id=(SELECT id FROM {$wpdb->prefix}mic_keyword WHERE keyword='".ucfirst($key)."')");
                 echo "Opération réussite, nouvelle liaison: <b>$rowservice->service</b> et <b>$rowkeyword->keyword</b>";       
+            
             } 
     ?>
         <script type='text/javascript'>window.location=document.location.href;</script>
     <?php
     }
 }
+
 //page ajoute secteur
 function mic_add_secteur(){
     mic_load_plugin_css();
     	?>
 	<div class="aj_secteur">
-             <center><img src="<?php echo plugin_dir_url( __FILE__ ) . 'img/logo3.png'; ?>"><center>
-            <h2>Ajouter des secteurs</h2>
-                <form action="#" method="post" />
-                    <h4><b>Saisir le secteur:<b></h4>
-                    <input type='text' name='secteur'>
-                    <br><br> 
-                    <input class="buttonconfig" type="submit" value="Confirmer"><br>
-                </form>
-            <div class="affichagedonnees">
-                <hr>
-                <h3>Liste des secteurs ajouté:</h3>
-                <h4>
-                 <?php     
-                  global $wpdb;
-                  $secteurs = $wpdb->get_results( "select libelle from {$wpdb->prefix}mic_secteurs");  
-                  foreach ($secteurs as $secteur){
-                      $text .= $secteur->libelle. ', ';
-                  }
-                  $text = rtrim($text, ", ");
-  
-                  if (empty($text)){$text .= '</h4>';} else {$text .= '.</h4>';}
-                    echo $text;
-                  if (mic_the_slug_exists($_POST['secteur']) == false && !empty($_POST['secteur']) && is_string($_POST['secteur'])){
-                      $table = "{$wpdb->prefix}mic_secteurs";
-                      $sql_secteur = $wpdb->prepare("INSERT INTO $table (libelle) SELECT %s FROM dual WHERE NOT EXISTS (SELECT libelle FROM $table WHERE libelle=%s) LIMIT 1;", ucfirst($_POST['secteur']), ucfirst($_POST['secteur']));
-                      $wpdb->query($sql_secteur);   
-                      echo "<h4 style='color:red'>Operation reussite.</h4>";
-                      echo "<script type='text/javascript'>window.location=document.location.href;</script>";
-                  } elseif (isset($_POST['secteur']) && empty($_POST['secteur'])) {
-                      echo "<h4 style='color:red'>Le champ est incorrect.</h4>";
-                  } elseif (mic_the_slug_exists($_POST['secteur']) == true && $_POST['secteur'] != NULL){
-                      echo "<h4 style='color:red'>Le secteur saisi existe déjà</h4>";
-                  }
-                  ?>
+        <h2>Ajouter des secteurs</h2>
+            <form action="#" method="post" />
+                <h4><b>Saisir le secteur:<b></h4>
+                <input type='text' name='secteur'>
+                <br><br> 
+                <input class="buttonconfig" type="submit" value="Confirmer"><br>
+            </form>
+        <div class="affichagedonnees">
+            <hr>
+            <h3>Liste des secteurs ajouté:</h3>
+            <h4>
+                <?php     
+                global $wpdb;
+                $secteurs = $wpdb->get_results( "select libelle from {$wpdb->prefix}mic_secteurs");  
+                foreach ($secteurs as $secteur){
+                    $text .= $secteur->libelle. ', ';
+                }
+                $text = rtrim($text, ", ");
+
+                if (empty($text)){$text .= '</h4>';} else {$text .= '.</h4>';}
+                echo $text;
+                if (mic_the_slug_exists($_POST['secteur']) == false && !empty($_POST['secteur']) && is_string($_POST['secteur'])){
+
+                    $table = "{$wpdb->prefix}mic_secteurs";
+                    $sql_secteur = $wpdb->prepare("INSERT INTO $table (libelle) SELECT %s FROM dual WHERE NOT EXISTS (SELECT libelle FROM $table WHERE libelle=%s) LIMIT 1;", ucfirst($_POST['secteur']), ucfirst($_POST['secteur']));
+                    $wpdb->query($sql_secteur);   
+                    echo "<h4 style='color:red'>Operation reussite.</h4>";
+                    echo "<script type='text/javascript'>window.location=document.location.href;</script>";
+
+                } elseif (isset($_POST['secteur']) && empty($_POST['secteur'])) {
+
+                    echo "<h4 style='color:red'>Le champ est incorrect.</h4>";
+
+                } elseif (mic_the_slug_exists($_POST['secteur']) == true && $_POST['secteur'] != NULL){
+
+                    echo "<h4 style='color:red'>Le secteur saisi existe déjà</h4>";
+
+                }
+                ?>
             </div>
         </div>
 	<?php
 }	
+
 //page ajoute service
 function mic_add_service(){
     mic_load_plugin_css();
     ?>
     <div class="aj_service">
-         <center><img src="<?php echo plugin_dir_url( __FILE__ ) . 'img/logo3.png'; ?>"><center>
         <h2>Ajouter des services</h2>
             <form action="#" method="post" enctype="multipart/form-data">
                 <h4>Saisir le service : </h4>
@@ -331,7 +353,7 @@ function mic_ajout_articles(){
     $table = "{$wpdb->prefix}mic_articles";
         ?>
         <h2>Ajout</h2>
-       <form action="#" method="post" enctype="multipart/form-data" name="ajoutarticle">
+        <form action="#" method="post" enctype="multipart/form-data" name="ajoutarticle">
             <h4>Saisir le titre : </h4>
             <input type="text" name="titre" />
             <h4>Saisir le contenu : </h4>
@@ -374,13 +396,15 @@ function mic_modif_articles(){
            <select id="service" name="articles">
            <?php    
                $articles = $wpdb->get_results( "select * from {$wpdb->prefix}mic_articles"); 
-               ?>ì<option value='0'></option><?php
+            ?>
+               <option value='0'></option>
+            <?php
                foreach ($articles as $article){       
                    echo "
                    <option value='$article->id'>$article->titre</option>
                    ";
                }
-            ?> ì 
+            ?> 
            </select><br>
            <h4>Saisir le titre : </h4>
                <input type="text" name="titre2" />
@@ -461,15 +485,20 @@ function mic_supprimer_articles(){
     </form> 
     <?php   
     if ($_POST){
+
         if(is_numeric($_POST['articles_effacer'])){
+
             $sql_deletearticle = $wpdb->prepare("DELETE FROM $table WHERE id = %d;", $_POST['articles_effacer']);
             $sql_deletepost = $wpdb->prepare("DELETE FROM {$wpdb->prefix}posts WHERE post_title = (SELECT titre FROM $table WHERE id=%d);", $_POST['articles_effacer']);
             $wpdb->query($sql_deletepost);
             $wpdb->query($sql_deletearticle);
             echo "<script>alert('Post effacé.');</script>";
+
         }
+
     }
 }    
+//page de gestion d'articles in back office
 function mic_gestion_articles(){
     global $wpdb;
     ?>
@@ -575,6 +604,7 @@ Gestion des articles</h1>
 <?php
 
 }
+
 //pour checker les page qu exist
 function mic_the_slug_exists($post_name) {
     global $wpdb;

@@ -17,8 +17,7 @@ function mic_create_tables(){
     $charset_collate = $wpdb->get_charset_collate();
 
     $queries = [ 
-        "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}mic_articles ( `id` INT NOT NULL AUTO_INCREMENT , `image` VARCHAR(250) NOT NULL , `titre` VARCHAR(250) NOT NULL , `contenu` LONGTEXT NOT NULL , INDEX (`id`)) $charset_collate,  ENGINE = InnoDB",
-        "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}mic_api` ( `clef` VARCHAR(250) NOT NULL ) $charset_collate,  ENGINE = InnoDB"
+        "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}mic_articles ( `id` INT NOT NULL AUTO_INCREMENT , `image` VARCHAR(250) NOT NULL , `titre` VARCHAR(250) NOT NULL , `contenu` LONGTEXT NOT NULL , INDEX (`id`)) $charset_collate,  ENGINE = InnoDB"
         ,
         "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}mic_keyword`
         ( `id` INT NOT NULL AUTO_INCREMENT , `keyword` VARCHAR(250) NOT NULL , `image` VARCHAR(250) NOT NULL , 
@@ -38,7 +37,9 @@ function mic_create_tables(){
         "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}mic_rel_key_ser` ( `id_service` INT NOT NULL AUTO_INCREMENT , `id_keyword` INT NOT NULL , 
         INDEX (id_service,id_keyword)) $charset_collate, ENGINE = InnoDB"   
         ];
+
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
         foreach ( $queries as $sql ) {
             dbDelta( $sql );
         }
@@ -54,9 +55,12 @@ function mic_create_tables(){
         ];   
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     foreach ( $queries2 as $sql2 ) {
+
         $wpdb->query($sql2);
+
     }
 }
+
 //menu plugin
 add_action( 'admin_menu', 'mic_my_admin_menu' );
 
@@ -265,6 +269,7 @@ function  mic_create_new_page_key_sec() {
     INNER JOIN {$wpdb->prefix}mic_keyword ON {$wpdb->prefix}mic_keyword.id = {$wpdb->prefix}mic_combinaisons.id_keyword
     INNER JOIN {$wpdb->prefix}mic_secteurs ON {$wpdb->prefix}mic_secteurs.id_secteurs = {$wpdb->prefix}mic_combinaisons.id_secteur", OBJECT 
     );
+    
     foreach ( $resu as $res ) {
         $id = $res->id;
         //a verufier
